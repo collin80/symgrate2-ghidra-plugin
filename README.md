@@ -1,8 +1,10 @@
-This is an example Ghidra script that queries a symgrate2 server.
+This GHIDRA script queries symgrate and renames all functions found to
+the name returned by symgrate.
+
 Copy it to `~/ghidra_scripts` and run it in the Script Manager.
 
-For now, it simply prints the matching addresses and symbol names.  In
-the near future, we'll port it from Jython2 to Java and allow for
-automatic commitment of the recovered names.
+Very quickly and poorly hacked on by me. Doesn't bother checking
+if you've manually renamed the function. Renames it anyway. Doesn't
+batch up queries to the server. But, it works.
 
 

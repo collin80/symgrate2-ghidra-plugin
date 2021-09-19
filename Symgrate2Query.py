@@ -13,6 +13,7 @@
 ## Rewriting it in Java might be a good idea.  Who knows?
 
 import httplib;
+from ghidra.program.model.symbol.SourceType import *
 
 
 #Must match the server.
@@ -24,11 +25,11 @@ def queryfns(conn, q):
     r1 = conn.getresponse()
     # print r1.status, r1.reason
     # 200 OK ?
-    toret=None;
+    toret="";
     if r1.status==200:
         data = r1.read();
         if len(data)>2:
-            print data.strip();
+            toret += data.strip();
 
     return toret;
 
@@ -41,7 +42,6 @@ fnhandled=0;
 
 conn = httplib.HTTPConnection("symgrate.com",80)
 
-
 qstr="";
 
 while f is not None:
@@ -50,24 +50,22 @@ while f is not None:
     adrstr="%x"%adr.offset;
     res=None;
 
-
     B=getBytes(adr, LEN);
     bstr="";
     for b in B: bstr+="%02x"%(0x00FF&b)
 
-    # We query the server in batches of 64 functions to reduce HTTP overhead.
     qstr+="%s=%s&"%(adrstr,bstr)
+    #if fnhandled&0x3F==0 or f is None:
+    res=queryfns(conn,qstr);
+    toks = res.split(' ');
+    if len(toks) > 1:
+        print "Renaming function at " + toks[0] + " to " + toks[1];
+        f.setName(toks[1], USER_DEFINED);
+    monitor.setProgress(fnhandled);
+    qstr="";
     f = getFunctionAfter(f)
-    if fnhandled&0x3F==0 or f is None:
-        res=queryfns(conn,qstr);
-        monitor.setProgress(fnhandled);
-        qstr="";
     
     fnhandled+=1;
 
 conn.close();
-
-
-#Queries an example sprintf for testing.
-#queryfn("0eb440f2000370b59db021acc0f20003064602a954f8042b4ff402751868cff6ff7502962346019406966ff0004405950794");
 
